@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="big5" ?>
+
+<project name="flume-ng-hbase-sink" default="jar" basedir=".">
+<description>Apache Flume NG Sink Package for HBase</description>
+   <tstamp/>
+   <!-- Set global properties -->
+   <property name="project.fullname" value="flume-ng-hbase-sink" />
+   <property name="project.aliasname" value="flume-ng-hbase-sink" />
+   <property name="project.ver" value="0.2.0" />
+   <property name="project.author" value="" />
+   <property name="project.org" value="" />
+   <property name="dir.root" value="." />
+   <property name="dir.lib" value="lib" />
+   <property name="dir.res" value="res"/>
+   <property name="dir.res.script" value="script"/>
+   <property name="dir.src" value="src"/>
+   <property name="dir.src.main" value="src/main"/>
+   <property name="dir.src.test" value="src/test"/>
+   <property name="dir.build" value="build"/>
+   <property name="dir.build.src" value="${dir.build}/classes"/>
+   <property name="dir.build.test" value="${dir.build}/test"/>
+   <property name="dir.build.web" value="${dir.build}/WebContent/WEB-INF"/>
+   <property name="dir.build.jar" value="${dir.build}/jar"/>
+   <property name="dir.build.zip" value="${dir.build}/zip"/>
+   <property name="file.jar" value="${project.aliasname}-${project.ver}.jar"/>
+   <property name="file.war" value="${project.aliasname}-${project.ver}.war"/>
+   <property name="file.zip" value="${project.aliasname}-${project.ver}.zip"/>
+   <!-- Define classpath -->
+   <path id="classpath.project">
+      <pathelement path="${dir.build.src}"/>
+      <fileset dir="${dir.lib}">
+         <include name="**/*.jar"/>
+      </fileset>
+   </path>
+
+   <target name="vssget">
+      <vssget localPath="."
+        recursive="true"
+        serverPath="//10.144.171.71/vss/IEN"
+        login="elviswang,123456"
+        ssdir="C:\Program Files\vss\win32"
+        vsspath="$/iEN.Pro/1.0/src/ien.api"/>
+   </target>
+  
+   <target name="clean">
+      <delete dir="${dir.build}"/>
+   </target>
+
+   <target name="init" description="initialize">
+      <mkdir dir="${dir.build}"/>
+      <mkdir dir="${dir.build.src}"/>
+      <mkdir dir="${dir.build.test}"/>
+      <mkdir dir="${dir.build.jar}"/>
+      <mkdir dir="${dir.build.zip}"/>
+   </target>
+  
+   <target name="compile" depends="init">
+      <echo>=== COMPILE ===</echo>
+      <copy todir="${dir.build.src}">
+         <fileset dir="${dir.res}">
+            <include name="**/*.xml"/>
+            <include name="**/*.properties"/>
+         </fileset>
+      </copy>
+      <echo>Compiling ${dir.src.main} files ...</echo>
+      <javac srcdir="${dir.src.main}" destdir="${dir.build.src}">
+         <classpath refid="classpath.project"/>
+      </javac>
+      <echo>Compiling ${dir.src.test} files ...</echo>
+      <javac srcdir="${dir.src.test}" destdir="${dir.build.test}">
+         <classpath refid="classpath.project"/>
+      </javac>
+   </target>  
+
+   <target name="junit" depends="compile">
+      <junit printsummary="on" fork="false" haltonfailure="true" showoutput="true">
+         <classpath>
+            <path refid="classpath.project" />
+            <pathelement path="${dir.build.test}"/>
+         </classpath>
+         <formatter type="brief" usefile="false"/>
+         <batchtest>
+            <fileset dir="${dir.build.test}">
+               <include name="**/Test*.class"/>
+            </fileset>
+         </batchtest>
+      </junit>
+   </target>
+  
+   <target name="jar" depends="compile">
+      <jar destfile="${dir.build.jar}/${file.jar}">
+         <fileset dir="${dir.build.src}" includes="**/*.class"/>
+         <fileset dir="${dir.build.src}" includes="**/*.xml"/>
+         <fileset dir="${dir.build.src}" includes="**/*.properties"/>
+         <manifest>
+            <attribute name="Built-By" value="${project.author}"/>
+            <attribute name="Main-Class" value=""/>
+            <section name="common">
+               <attribute name="Specification-Title" value="${project.fullname}"/>
+               <attribute name="Specification-Version" value="${project.ver}"/>
+               <attribute name="Specification-Vendor" value="${project.org}"/>
+               <attribute name="Implementation-Title" value="${project.fullname}"/>
+               <attribute name="Implementation-Version" value="${project.ver} build ${DSTAMP}"/> 
+               <attribute name="Implementation-Vendor" value="${project.org}"/>
+            </section>
+         </manifest>
+      </jar>
+   </target>
+
+   <target name="zip" depends="jar">
+      <copy todir="${dir.build.zip}">
+         <fileset dir="${dir.res}"/>
+         <fileset dir="${dir.root}">
+            <include name="${dir.lib}/**"/>
+         </fileset>
+      </copy>
+      <copy todir="${dir.build.zip}/${dir.lib}">
+         <fileset dir="${dir.build.jar}">
+            <include name="**/${file.jar}"/>
+         </fileset>
+      </copy>
+      <zip destfile="${dir.build}/${file.zip}">
+         <fileset dir="${dir.build.zip}">
+            <include name="**/**"/>
+         </fileset>
+      </zip>
+   </target>
+
+</project>
