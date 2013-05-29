@@ -20,7 +20,7 @@ public class TestSimpleAsyncHbaseEventSerializer {
       for (int icnt=0;icnt<5;icnt++) {
          headers.put("h"+icnt, "v"+icnt);
       }
-      headers.put("host", "10.144.123.19");
+      headers.put("host", "srchost");
       Event event = EventBuilder.withBody(body, headers);
       assertEquals("HEADER1","v1",event.getHeaders().get("h1"));
       assertEquals("BODY","BODY123",new String(event.getBody()));
@@ -28,13 +28,14 @@ public class TestSimpleAsyncHbaseEventSerializer {
       Context cotx = new Context();
       cotx.put("payloadColumn", "evtBody");
       cotx.put("incrementColumn", "iCol");
-      cotx.put("rowPrefix", "evKey");
+      cotx.put("rowPrefix", "evKey-");
       cotx.put("suffix", "timestamp");
       cotx.put("incrementRow", "iRow");      
       // Serializer
       SimpleAsyncHbaseEventSerializer ser = new SimpleAsyncHbaseEventSerializer();
       ser.initialize("t1".getBytes(), "fam1".getBytes());
       ser.configure(cotx);
+      // 1st event
       ser.setEvent(event);
       List<PutRequest> actions = ser.getActions();
       for(PutRequest req:actions){
@@ -44,7 +45,16 @@ public class TestSimpleAsyncHbaseEventSerializer {
          +"],Q=["+new String(req.qualifier())
          +"],V=["+new String(req.value())+"]"));
       }
-      
+      // 2nd event
+      ser.setEvent(event);
+      actions = ser.getActions();
+      for(PutRequest req:actions){
+         System.out.println(new String("T=["+new String(req.table())
+         +"],K=["+new String(req.key())
+         +"],F=["+new String(req.family())
+         +"],Q=["+new String(req.qualifier())
+         +"],V=["+new String(req.value())+"]"));
+      }
    }
 
 }
