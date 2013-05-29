@@ -74,20 +74,20 @@ public class SimpleAsyncHbaseEventSerializer implements AsyncHbaseEventSerialize
     if(payloadColumn != null){
       byte[] rowKey;
       String srchost = (hbevent.getHeaders().containsKey("host"))?(hbevent.getHeaders().get("host")):("");
-      rowPrefix = rowPrefix + srchost + "-";
+      String rowPrefixHost = rowPrefix + srchost + "-";
       try {
         switch (keyType) {
           case TS:
-            rowKey = SimpleRowKeyGenerator.getTimestampKey(rowPrefix);
+            rowKey = SimpleRowKeyGenerator.getTimestampKey(rowPrefixHost);
             break;
           case TSNANO:
-            rowKey = SimpleRowKeyGenerator.getNanoTimestampKey(rowPrefix);
+            rowKey = SimpleRowKeyGenerator.getNanoTimestampKey(rowPrefixHost);
             break;
           case RANDOM:
-            rowKey = SimpleRowKeyGenerator.getRandomKey(rowPrefix);
+            rowKey = SimpleRowKeyGenerator.getRandomKey(rowPrefixHost);
             break;
           default:
-            rowKey = SimpleRowKeyGenerator.getUUIDKey(rowPrefix);
+            rowKey = SimpleRowKeyGenerator.getUUIDKey(rowPrefixHost);
             break;
         }
         PutRequest putRequest;
