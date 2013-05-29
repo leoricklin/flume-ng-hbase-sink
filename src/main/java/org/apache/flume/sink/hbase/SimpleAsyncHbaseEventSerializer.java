@@ -73,6 +73,8 @@ public class SimpleAsyncHbaseEventSerializer implements AsyncHbaseEventSerialize
     List<PutRequest> actions = new ArrayList<PutRequest>();
     if(payloadColumn != null){
       byte[] rowKey;
+      String srchost = (hbevent.getHeaders().containsKey("host"))?(hbevent.getHeaders().get("host")):("");
+      rowPrefix = rowPrefix + srchost + "-";
       try {
         switch (keyType) {
           case TS:
@@ -88,20 +90,10 @@ public class SimpleAsyncHbaseEventSerializer implements AsyncHbaseEventSerialize
             rowKey = SimpleRowKeyGenerator.getUUIDKey(rowPrefix);
             break;
         }
-        // 20130527, leorick
-/*
-        PutRequest putRequest =  new PutRequest(table, rowKey, cf,
-            payloadColumn, payload);
-        actions.add(putRequest);
-*/
-        // Rowkey
-        String srchost = (hbevent.getHeaders().containsKey("host"))?(hbevent.getHeaders().get("host")):("");
-        rowKey = (new String(rowKey) + "-" + srchost).getBytes();
         PutRequest putRequest;
         // Event Headers
         for (Map.Entry<String, String> entry : hbevent.getHeaders().entrySet()) {
            if (entry.getKey() != null) {
-//            System.out.println("["+new String(table)+"]["+new String(rowKey)+"]["+new String(cf)+"]["+entry.getKey()+"]["+entry.getValue()+"]");
               putRequest = new PutRequest(table, rowKey, cf, entry.getKey().getBytes(), entry.getValue().getBytes());
               actions.add(putRequest);
            }
@@ -160,29 +152,6 @@ public class SimpleAsyncHbaseEventSerializer implements AsyncHbaseEventSerialize
 
   @Override
   public void setEvent(Event event) {
-     // 20130521, leoricklin
-/*
-      {"header":[
-      {"h1":"v1"},
-      {"h2":"v2"}
-      ],
-      "body":"b1"
-      }
-     this.payload = event.getBody();
-*/
-     // 20130527, leorick
-/*
-     String QUOTE = "\"";
-     StringBuffer stb = new StringBuffer("{"+QUOTE+"header"+QUOTE+":[");
-     
-     for (Map.Entry<String, String> entry : event.getHeaders().entrySet()) {
-        stb.append("{"+QUOTE+entry.getKey()+QUOTE+":"+QUOTE+entry.getValue()+QUOTE+"},");
-     }
-     stb.deleteCharAt(stb.length()-1);
-     stb.append("],");
-     stb.append(QUOTE+"body"+QUOTE+":"+QUOTE+new String(event.getBody())+QUOTE+"}");
-     this.payload = stb.toString().getBytes();
-*/
      this.hbevent = event;
      this.payload = event.getBody();
   }
